@@ -1,29 +1,19 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.responses import FileResponse
 from mutagen import File as MutagenFile
-from pydantic import BaseModel
 from typing import Annotated
 from pathlib import Path
 from uuid import uuid4
 
+from models import Note
+from storage import AUDIO_DIR, NOTES, is_supported_audio, get_note_or_404
+
 app = FastAPI()
-
-AUDIO_DIR = Path("audio")
-AUDIO_DIR.mkdir(exist_ok=True)
-
-class Note(BaseModel):
-    id: str
-    filename: str
-    content_type: str
-    size_bytes: int
-    duration_sec: float
-
-NOTES: dict[str, Note] = {}
 
 @app.post("/notes", response_model=Note)
 async def create_note(file: UploadFile = File(...)):
-    if not looks_like_audio(file):
-        raise HTTPException(status_code=400, detail="Invalid file type, expected audio/*")
+    if not is_supported_audio(file):
+        raise HTTPException(status_code=400, detail="Invalid file type, expected audio/*, or .mp3/.m4a/.wav extension")
 
     out_path = AUDIO_DIR / Path(file.filename)
 
@@ -72,15 +62,3 @@ async def get_note_audio(note_id: str):
         media_type=note.content_type,
         filename=note.filename,
     )
-
-def get_note_or_404(note_id: str) -> Note:
-    note = NOTES.get(note_id)
-    if not note:
-        raise HTTPException(status_code=404, detail="Note not found")
-    return note
-
-def looks_like_audio(file: UploadFile) -> bool:
-    if file.content_type.startswith("audio/"):
-        return True
-    suffix = Path(file.filename).suffix.lower()
-    return suffix in (".mp3", ".m4a", ".wav")
