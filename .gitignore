@@ -1,6 +1,8 @@
-# Python-generated files
+# Python bytecode / cache
 __pycache__/
 *.py[oc]
+
+# Build artifacts
 build/
 dist/
 wheels/
@@ -8,12 +10,27 @@ wheels/
 
 # Virtual environments
 .venv/
+env/
+venv/
+ENV/
 
 # macOS
 .DS_Store
 
-# IDE
+# IDE / Editor
 .idea/
+.vscode/
 
 # Logs
 *.log
+
+# Test / coverage / cache
+.pytest_cache/
+.coverage
+.coverage.*
+.cache/
+htmlcov/
+
+# Audio scratch files (keep or remove depending on usage)
+audio/*.wav
+audio/*.m4a

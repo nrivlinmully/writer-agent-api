@@ -9,3 +9,8 @@ dependencies = [
     "mutagen>=1.47.0",
     "pydub>=0.25.1",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
