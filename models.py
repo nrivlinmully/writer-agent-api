@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -7,3 +9,4 @@ class Note(BaseModel):
     content_type: str
     size_bytes: int
     duration_sec: float
+    created_at: datetime

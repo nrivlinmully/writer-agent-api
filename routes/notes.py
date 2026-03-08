@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, UploadFile, File, HTTPException, Query
 from fastapi.responses import FileResponse
 from mutagen import File as MutagenFile
@@ -31,17 +33,29 @@ async def create_note(file: UploadFile = File(...)):
         filename=out_path.name,
         content_type=file.content_type,
         size_bytes=size,
-        duration_sec=duration_sec
+        duration_sec=duration_sec,
+        created_at=datetime.now(timezone.utc),
     )
 
     NOTES[note.id] = note
     return note
 
 @router.get("/notes", response_model=list[Note])
-async def get_notes(min_duration: Annotated[float | None, Query(ge=0)] = None):
+async def get_notes(min_duration: Annotated[float | None, Query(ge=0)] = None,
+                    created_after: Annotated[datetime | None, Query()] = None,
+                    created_before: Annotated[datetime | None, Query()] = None
+):
     notes = list(NOTES.values())
+
     if min_duration is not None:
         notes = [n for n in notes if n.duration_sec >= min_duration]
+
+    if created_after is not None:
+        notes = [n for n in notes if n.created_at >= created_after]
+
+    if created_before is not None:
+        notes = [n for n in notes if n.created_at <= created_before]
+
     return notes
 
 @router.get("/notes/{note_id}", response_model=Note)
